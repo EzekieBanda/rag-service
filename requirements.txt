@@ -5,3 +5,5 @@ faiss-cpu
 sentence-transformers
 requests
 pydantic
+python-docx
+PyPDF2
