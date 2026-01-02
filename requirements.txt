@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+gunicorn
+faiss-cpu
+sentence-transformers
+requests
+pydantic
