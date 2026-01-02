@@ -1,23 +1,17 @@
 import os
-import requests
-from app.embeddings import embed
-from app.indexer import load_index
+import httpx
 
-OLLAMA_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
-MODEL = os.getenv("OLLAMA_MODEL", "gpt-oss:20b")
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gpt-oss:20b")  # Use smaller model in prod CPU
 
-def query_llm(question):
-    index, docs = load_index()
-    q_vec = embed([question])
-
-    _, idxs = index.search(q_vec, 3)
-    context = "\n".join([docs[i] for i in idxs[0]])
-
+async def query_llm(question: str) -> str:
     payload = {
-        "model": MODEL,
-        "prompt": f"Context:\n{context}\n\nQuestion:\n{question}",
-        "stream": False
+        "model": OLLAMA_MODEL,
+        "prompt": question,
+        "max_tokens": 512
     }
-
-    r = requests.post(f"{OLLAMA_URL}/api/generate", json=payload)
-    return r.json()["response"]
+    async with httpx.AsyncClient(timeout=60) as client:
+        response = await client.post(f"{OLLAMA_BASE_URL}/completions", json=payload)
+        response.raise_for_status()
+        data = response.json()
+        return data.get("completion", "")
