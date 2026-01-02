@@ -1,7 +1,7 @@
 import os
 import faiss
 import pickle
-from embeddings import embed
+from app.embeddings import embed
 
 DATA_PATH = os.getenv("DATA_PATH", "/data")
 INDEX_PATH = os.getenv("INDEX_PATH", "/index")

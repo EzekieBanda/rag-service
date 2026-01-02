@@ -1,7 +1,7 @@
 import os
 import requests
-from embeddings import embed
-from indexer import load_index
+from app.embeddings import embed
+from app.indexer import load_index
 
 OLLAMA_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 MODEL = os.getenv("OLLAMA_MODEL", "gpt-oss:20b")
