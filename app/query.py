@@ -94,7 +94,15 @@ async def query_llm(question: str) -> str:
     load_embedder()
 
     # First: detect greeting/identity/capability intents and honor policy file if present
-    
+    policy_chunk = _find_policy_chunk()
+    if policy_chunk:
+        if _is_greeting_intent(question):
+            return "Hello! How can I assist you today?"
+        if _is_identity_intent(question):
+            return "I am NBS Assistant, your helpful AI companion."
+        if _is_capabilities_intent(question):
+            return ("I can answer questions based on available documents, explain concepts clearly, "
+                    "and assist with technical, professional, and general knowledge questions.")
 
     # Embed question
     q_embedding = _embedder.encode([question])
