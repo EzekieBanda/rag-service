@@ -30,7 +30,7 @@ COPY ./app ./app
 ENV DATA_PATH=/data
 ENV INDEX_PATH=/index
 ENV OLLAMA_BASE_URL=http://ollama:11434
-ENV OLLAMA_MODEL=gpt-oss:20b
+ENV OLLAMA_MODEL=phi3:14b
 
 # Expose FastAPI port
 EXPOSE 8000

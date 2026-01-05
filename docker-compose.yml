@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  # Ollama LLM
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"   # Ollama API
+    volumes:
+      - ollama:/root/.ollama
+    restart: unless-stopped
+    # healthcheck:
+    #   test: >
+    #     sh -c "curl -s -f http://localhost:11434/api/generate \
+    #     -d '{\"model\":\"phi4\",\"prompt\":\"hello\",\"stream\":false}' || exit 1"
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 10
+
+  # FAISS RAG Service
+  rag-service:
+    image: rag-faiss-service:latest
+    container_name: rag-faiss
+    environment:
+      - DATA_PATH=/data
+      - INDEX_PATH=/index
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=phi3:14b
+    volumes:
+      - rag-data:/data
+      - faiss-index:/index
+    ports:
+      - "8083:8000"
+    depends_on:
+      ollama:
+        condition: service_started
+      document-api:
+        condition: service_started
+    restart: unless-stopped
+
+  # Document Upload API
+  document-api:
+    image: rag-document-uploadapi:latest
+    container_name: rag-document-api
+    environment:
+      - ASPNETCORE_URLS=http://+:5062
+      - DATA_PATH=/data
+    volumes:
+      - rag-data:/data
+    ports:
+      - "5062:5062"
+    depends_on:
+      ollama:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  ollama:
+  rag-data:
+  faiss-index:
