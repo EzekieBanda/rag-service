@@ -33,6 +33,50 @@ def load_index():
         _chunk_mapping = pickle.load(f)
 
 
+def _find_policy_chunk() -> str:
+    """Search indexed chunks for the greetings/identity policy marker.
+    Return the chunk text if found, else empty string.
+    """
+    if _chunk_mapping is None:
+        return ""
+    markers = [
+        "SYSTEM IDENTITY AND GREETINGS POLICY",
+        "NBS Assistant",
+        "GREETINGS AND BASIC INTERACTIONS",
+        "IDENTITY",
+        "CAPABILITIES",
+    ]
+    for c in _chunk_mapping:
+        txt = c.get("text", "")
+        up = txt.upper()
+        if any(m in up for m in markers):
+            return txt
+    return ""
+
+
+def _is_greeting_intent(question: str) -> bool:
+    q = question.strip().lower()
+    greetings = {"hi", "hello", "hey", "hi!", "hello!", "hey!"}
+    if q in greetings:
+        return True
+    # short greeting phrases
+    if any(q.startswith(g + " ") for g in greetings):
+        return True
+    return False
+
+
+def _is_identity_intent(question: str) -> bool:
+    q = question.strip().lower()
+    patterns = ["who are you", "what is your name", "what are you called", "your name"]
+    return any(p in q for p in patterns)
+
+
+def _is_capabilities_intent(question: str) -> bool:
+    q = question.strip().lower()
+    patterns = ["what are you good at", "what can you do", "capabilities", "what can you do for me"]
+    return any(p in q for p in patterns)
+
+
 def load_embedder():
     global _embedder
     if _embedder is None:
@@ -48,6 +92,9 @@ async def query_llm(question: str) -> str:
     """
     load_index()
     load_embedder()
+
+    # First: detect greeting/identity/capability intents and honor policy file if present
+    
 
     # Embed question
     q_embedding = _embedder.encode([question])
