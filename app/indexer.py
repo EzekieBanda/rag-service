@@ -41,7 +41,25 @@ def chunk_text(text: str, size: int = CHUNK_SIZE):
     return [text[i:i+size] for i in range(0, len(text), size)]
 
 #Hash method to get file hash
+def get_file_hash(path: str) -> str:
+    """Generate an md5 hash for the file contents."""
+    h = hashlib.md5()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
+
+def load_indexed_files() -> Dict[str, str]:
+    if os.path.exists(indexed_files_file):
+        with open(indexed_files_file, "rb") as f:
+            return pickle.load(f)
+    return {}
+
+
+def save_indexed_files(d: Dict[str, str]):
+    with open(indexed_files_file, "wb") as f:
+        pickle.dump(d, f)
 
 def build_index():
     global index
